@@ -1,0 +1,38 @@
+---
+# defaults file for koji-hub
+koji_hub_ssl: true
+koji_hub_create_kojiadmin: true
+koji_hub_add_builders: false
+
+koji_hub_SSLCertificateFile: /etc/pki/koji/certs/{{ ansible_fqdn }}.crt
+koji_hub_SSLCertificateKeyFile: /etc/pki/koji/private/{{ ansible_fqdn }}.key
+koji_hub_SSLCertificateChainFile: /etc/pki/koji/koji_ca_cert.crt
+koji_hub_SSLCACertificateFile: /etc/pki/koji/koji_ca_cert.crt
+koji_hub_SSLVerifyClient: require
+koji_hub_SSLVerifyDepth: 10
+
+# defaults for /etc/koji-hub/hub.conf
+koji_hub_DBName: koji
+koji_hub_DBUser: koji
+koji_hub_DBHost: 127.0.0.1
+koji_hub_DBPass: "{{ hostvars[groups['koji_db'][0]]['koji_db_pass'] }}"
+koji_hub_KojiDir: /mnt/koji
+koji_hub_ProxyDNs: /C={{ hostvars[groups['koji_ca'][0]]['countryName_default'] }}/ST={{ hostvars[groups['koji_ca'][0]]['stateOrProvinceName_default'] }}/O={{ hostvars[groups['koji_ca'][0]]['organizationName_default'] }}/CN={{ hostvars[groups['koji_ca'][0]]['CN'] }}/emailAddress={{ hostvars[groups['koji_ca'][0]]['koji_ca_emailUser'] }}@{{ hostvars[groups['koji_ca'][0]]['koji_ca_emailDomain'] }}
+koji_hub_LoginCreatesUser: "On"
+koji_hub_KojiWebURL: http://{{ hostvars[groups['koji_web'][0]]['inventory_hostname'] }}/koji
+koji_hub_NotifyOnSuccess: True
+koji_hub_KojiDebug: Off
+koji_hub_KojiTraceback: normal
+koji_hub_policy_build_from_srpm: true
+
+# defaults for /etc/koji.conf
+koji_hub_server: http://{{ hostvars[groups['koji_hub'][0]]['inventory_hostname'] }}/kojihub
+koji_hub_topurl: http://{{ hostvars[groups['koji_web'][0]]['inventory_hostname'] }}/kojifiles
+koji_hub_cert: ~/.koji/client.crt
+koji_hub_ca: ~/.koji/clientca.crt
+koji_hub_serverca: ~/.koji/serverca.crt
+
+koji_hub_kojiadmins:
+  - { name: 'kojiadmin' }
+
+koji_hub_issue_cert: false

@@ -1,0 +1,71 @@
+---
+
+- name: "Create {{ ca_root_path }}"
+  file: path="{{ ca_root_path }}" state=directory mode=0755
+
+- name: "Create {{ ca_root_path }}/private"
+  file: path="{{ ca_root_path }}/private" state=directory mode=0700
+
+- name: "Create {{ ca_root_path }}/certs"
+  file: path="{{ ca_root_path }}/certs" state=directory mode=0755
+
+- name: "Create {{ ca_root_path }}/config"
+  file: path="{{ ca_root_path }}/config" state=directory mode=0755
+
+- name: "Create {{ ca_root_path }}/pems"
+  file: path="{{ ca_root_path }}/pems" state=directory mode=0705
+
+- name: "Create {{ ca_root_path }}/webcerts"
+  file: path="{{ ca_root_path }}/webcerts" state=directory mode=0705
+
+- name: "Configure CA ssl.cnf"
+  template: src=ssl.cnf.j2 
+            dest="{{ ca_root_path }}/ssl.cnf"
+            owner={{ ssl_cnf_owner }}
+            group={{ ssl_cnf_group }}
+            mode=0644
+
+- name: "touch index"
+  shell: "touch {{ ca_root_path }}/index"
+  args:
+    chdir: "{{ ca_root_path }}"
+    creates: "{{ ca_root_path }}/index"
+
+- name: "echo 01 > serial"
+  shell: "echo 01 > {{ ca_root_path }}/serial"
+  args:
+    chdir: "{{ ca_root_path }}"
+    creates: "{{ ca_root_path }}/serial"
+
+- name: "genrsa"
+  command: openssl genrsa -out "private/{{ ca_name }}_ca_cert.key" 4096
+  args:
+    chdir: "{{ ca_root_path }}"
+    creates: "{{ ca_root_path }}/private/{{ ca_name }}_ca_cert.key"
+
+- name: "Generate CA cert"
+  command: > 
+    openssl req -config ssl.cnf -new -x509
+    -subj "/C={{ countryName_default }}/ST={{ stateOrProvinceName_default }}/L={{ localityName_default }}/O={{ organizationName_default }}/OU={{ organizationalUnitName }}/CN={{ CN }}"
+    -days 3650 -key private/{{ ca_name }}_ca_cert.key -out {{ ca_name }}_ca_cert.crt -extensions v3_ca
+  args:
+    chdir: "{{ ca_root_path }}"
+    creates: "{{ ca_root_path }}/{{ ca_name }}_ca_cert.crt"
+
+- name: "Setup certgen.sh"
+  template: src=certgen.sh.j2
+            dest="{{ ca_root_path }}/certgen.sh"
+            owner={{ ssl_cnf_owner }}
+            group={{ ssl_cnf_group }}
+            mode=0755
+  tags:
+    - certgen
+
+- name: "Setup webcertgen.sh"
+  template: src=webcertgen.sh.j2
+            dest="{{ ca_root_path }}/webcertgen.sh"
+            owner={{ ssl_cnf_owner }}
+            group={{ ssl_cnf_group }}
+            mode=0755
+  tags:
+    - webcertgen

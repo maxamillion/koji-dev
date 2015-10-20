@@ -1,0 +1,78 @@
+#!/bin/bash
+# user is equal to parameter one or the first argument when you actually run the script
+# DEBUG=true
+DEBUG_LOG=/tmp/certgen.log
+
+# remember old umask
+oldumask=$(umask)
+# change to this umask
+umask 227
+
+user=$1
+email=$2
+
+if [ ! ${user} ];
+  then
+    echo "Provide CN"
+    exit 1;
+fi
+
+if [ ! -z ${DEBUG} ];
+  then
+    echo >> /tmp/certgen
+    echo >> /tmp/certgen
+    echo "All args are: $@" >> ${DEBUG_LOG}
+    echo "user is: ${user}" >> ${DEBUG_LOG}
+    echo "email is: ${email}" >> ${DEBUG_LOG}
+fi
+
+openssl genrsa -out private/${user}.key 2048
+
+if [ ! -s private/${user}.key ];
+  then
+    rm -f private/${user}.key
+    exit 111
+fi
+
+sed 's/{{ CN }}/'${user}'/' ssl.cnf > ssl2.cnf
+
+if [ ! -z ${email} ];
+ then
+    sed -i 's/info@example.org/'${email}'/' ssl2.cnf
+fi
+
+openssl req -batch -config ssl2.cnf -new -nodes -out certs/${user}.csr -key private/${user}.key
+openssl ca -batch -config ssl2.cnf -keyfile private/koji_ca_cert.key -cert koji_ca_cert.crt -out certs/${user}.crt -outdir certs -infiles certs/${user}.csr
+
+if [ ! -s certs/${user}.crt ];
+  then
+    rm -f certs/${user}.csr
+    rm -f certs/${user}.crt
+    exit 222
+fi
+
+cat certs/${user}.crt private/${user}.key > pems/${user}.pem
+
+if [ ! -s pems/${user}.pem ];
+  then
+    rm -f pems/${user}.pem
+    exit 333
+fi
+
+mv ssl2.cnf config/${user}-ssl.cnf
+
+# If user exists make him owner of his pem file
+
+getent passwd ${user}
+
+if [ $? -eq "0" ];
+  then
+    chown ${user} pems/${user}.pem
+  else
+    chown apache pems/${user}.pem
+fi
+
+# restore old umask
+umask $oldumask
+
+# Check if all the generated files are not empty

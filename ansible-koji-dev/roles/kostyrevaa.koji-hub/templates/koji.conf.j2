@@ -1,0 +1,27 @@
+[koji]
+
+;configuration for koji cli tool
+
+;url of XMLRPC server
+server = {{ koji_hub_server }}
+
+;url of web interface
+weburl = {{ koji_hub_KojiWebURL }}
+
+;url of package download site
+topurl = {{ koji_hub_topurl }}
+
+;path to the koji top directory
+topdir = {{ koji_hub_KojiDir }}
+
+;configuration for SSL authentication
+
+;client certificate
+cert = {{ koji_hub_cert }}
+
+;certificate of the CA that issued the client certificate
+ca = {{ koji_hub_ca }}
+
+;certificate of the CA that issued the HTTP server certificate
+serverca = {{ koji_hub_serverca }}
+

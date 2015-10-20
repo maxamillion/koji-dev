@@ -1,0 +1,8 @@
+---
+# defaults file for koji-web
+koji_web_issue_cert: false
+koji_web_KojiHubURL: http://{{ hostvars[groups['koji_hub'][0]]['inventory_hostname'] }}/kojihub
+koji_web_KojiFilesURL: http://{{ hostvars[groups['koji_web'][0]]['inventory_hostname'] }}/kojifiles
+koji_web_WebCert: /etc/pki/koji/pems/{{ ansible_fqdn }}.pem
+koji_web_ClientCA: /etc/pki/koji/koji_ca_cert.crt
+koji_web_KojiHubCA: /etc/pki/koji/koji_ca_cert.crt

@@ -1,0 +1,20 @@
+[web]
+SiteName = koji
+#KojiTheme = mytheme
+
+# Key urls
+KojiHubURL = {{ koji_web_KojiHubURL }}
+KojiFilesURL = {{ koji_web_KojiFilesURL }}
+
+# SSL authentication options
+WebCert = {{ koji_web_WebCert }}
+ClientCA = {{ koji_web_ClientCA }}
+KojiHubCA = {{ koji_web_KojiHubCA }}
+
+LoginTimeout = 72
+
+# This must be changed and uncommented before deployment
+Secret = {{ koji_web_secret }}
+
+LibPath = /usr/share/koji-web/lib
+

@@ -1,0 +1,79 @@
+# Config file for PostgreSQL
+- name: Config | Stop the Cluster
+  command: service postgresql{{ join_char | default("-")}}{{ postgresql_version }} stop
+  when: postgresql_cluster_reset
+
+- name: Config | Reset the cluster - drop the existing one
+  shell: rm -rf {{ postgresql_conf_directory }}
+  when: postgresql_cluster_reset
+
+- name: Config | Ensure the logging directory exists
+  file: state=directory dest="{{postgresql_log_directory}}" owner="{{postgresql_admin_user}}" group="{{postgresql_admin_user}}"
+  when: 'postgresql_log_directory.startswith("/")'
+
+- name: Install service file on Centos/Rhel 7
+  template: src="postgresql.service.j2" dest="/etc/systemd/system/postgresql{{ join_char | default("-")}}{{ postgresql_version }}.service"
+  when: ansible_distribution_major_version == '7'
+  register: servicefile
+
+- name: create /var/run/postgresql tmpfiles.d entry
+  lineinfile: dest=/etc/tmpfiles.d/postgresql93.conf line="D /var/run/postgresql 0755 postgres postgres -" create=yes
+  when: ansible_distribution_major_version == '7'
+
+- name: restart tmpfiles service
+  command:
+    systemd-tmpfiles --create
+    creates=/var/run/postgresql
+  when: ansible_distribution_major_version == '7'
+
+  # Can't use flush_handlers here as it might trigger a postgresql restart too early
+- name: reload systemctl if service file changed
+  command: systemctl daemon-reload
+  when: servicefile.changed
+
+- name: Config | Reset the cluster - create a new one (with specified encoding and locale)
+  command: service postgresql{{ join_char | default("-")}}{{ postgresql_version }} initdb {{postgresql_cluster_name}}
+  notify: restart postgresql
+  when: postgresql_cluster_reset
+
+- name: Check whether the data directory is already there
+  stat: path={{ postgresql_data_directory }}/base
+  register: data_dir
+
+# On Amazon Linux, we get ansible_distribution_major_version = "NA".
+# That's why we're using ansible_distribution/ansible_distribution_version variables.
+- name: Initialise Postgresql Database if it is not
+  command: service postgresql{{ join_char | default("-")}}{{ postgresql_version }} initdb
+  when: data_dir.stat.exists == false and (ansible_distribution_major_version == '6' or (ansible_distribution == 'Amazon' and ansible_distribution_version == '2015.03'))
+
+- name: Initialise Postgresql Database on Centos/Rhel 7 if it is not
+  command: /usr/pgsql-{{ postgresql_version }}/bin/postgresql{{ postgresql_version|replace('.','') }}-setup initdb
+  when: data_dir.stat.exists == false and ansible_distribution_major_version == '7'
+
+- name: Configure | Update configuration - (pg_hba.conf)
+  template:
+    src: pg_hba.conf.j2
+    dest: "{{postgresql_conf_directory}}/pg_hba.conf"
+    owner: "{{postgresql_admin_user}}"
+    group: "{{postgresql_admin_user}}"
+    mode: 0640
+  notify:
+    - restart postgresql
+
+- name: Configure | Update configuration - (postgresql.conf)
+  template:
+    src: postgresql.conf.j2
+    dest: "{{postgresql_conf_directory}}/postgresql.conf"
+    owner: "{{postgresql_admin_user}}"
+    group: "{{postgresql_admin_user}}"
+    mode: 0640
+  notify:
+    - restart postgresql
+
+- name: Configure | DB restart should happen now if required
+  meta: flush_handlers
+
+# Ensure postgresql is started if it didn't get restarted
+# (i.e. it was down and no config changes since)
+- name: Ensure PostgreSQL is running
+  service: name=postgresql{{ join_char | default("-")}}{{ postgresql_version }} state=started enabled=yes

@@ -1,0 +1,12 @@
+ssl_cnf_owner: root
+ssl_cnf_group: root
+ca_root_path: /etc/pki/koji
+countryName_default: 'US'
+stateOrProvinceName_default: 'North Carolina'
+localityName_default: 'Raleigh'
+organizationName_default: 'Fedora'
+organizationalUnitName: 'Koji-Dev'
+CN: 'koji-ca'
+ca_name: koji
+koji_ca_emailUser: info
+koji_ca_emailDomain: example.org

@@ -1,0 +1,6 @@
+---
+# RedHat tasks file for PostgreSQL
+- include: install.yml
+- include: configure.yml
+- include: databases.yml
+- include: users.yml

@@ -1,0 +1,63 @@
+#
+# koji-hub is an xmlrpc interface to the Koji database
+#
+
+Alias /kojihub /usr/share/koji-hub/kojixmlrpc.py
+
+<Directory "/usr/share/koji-hub">
+    Options ExecCGI
+    SetHandler wsgi-script
+{% if ansible_distribution_major_version == '7' %}
+    Require all granted
+{% endif %}
+{% if ansible_distribution_major_version == '6' %}
+    #If you have httpd <= 2.2, you'll want the following two lines instead
+    #of the one above:
+    Order allow,deny
+    Allow from all
+{% endif %}
+</Directory>
+
+# Support for mod_python is DEPRECATED. If you still need mod_python support,
+# then use the following directory settings instead:
+#
+# <Directory "/usr/share/koji-hub">
+#         SetHandler mod_python
+#         PythonHandler kojixmlrpc
+#         PythonOption ConfigFile /etc/koji-hub/hub.conf
+#         PythonDebug Off
+#         PythonAutoReload Off
+# </Directory>
+
+# Also serve /mnt/koji
+Alias /kojifiles "/mnt/koji/"
+
+<Directory "/mnt/koji">
+    Options Indexes FollowSymLinks
+    AllowOverride None
+{% if ansible_distribution_major_version == '7' %}
+    Require all granted
+{% endif %}
+{% if ansible_distribution_major_version == '6' %}
+    #If you have httpd <= 2.2, you'll want the following two lines instead
+    #of the one above:
+    Order allow,deny
+    Allow from all
+{% endif %}
+</Directory>
+
+# uncomment this to enable authentication via SSL client certificates
+{% if koji_hub_ssl %}
+<Location /kojihub/ssllogin>
+        SSLVerifyClient require
+        SSLVerifyDepth  10
+        SSLOptions +StdEnvVars
+</Location>
+{% endif %}
+# If you need to support koji < 1.4.0 clients using SSL authentication, then use the following instead:
+# <Location /kojihub>
+#         SSLOptions +StdEnvVars
+# </Location>
+# In this case, you will need to enable these options globally (in ssl.conf):
+# SSLVerifyClient require
+# SSLVerifyDepth  10

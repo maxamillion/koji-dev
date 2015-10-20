@@ -1,0 +1,4 @@
+---
+# handlers file for koji-web
+- name: httpd graceful
+  command: service httpd graceful

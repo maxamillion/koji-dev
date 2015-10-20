@@ -1,0 +1,27 @@
+---
+# defaults file for koji-builder
+koji_builder_user: "{{ ansible_fqdn }}"
+koji_builder_sleeptime: 5
+koji_builder_maxjobs: 10
+koji_builder_minspace: 8192
+koji_builder_topdir: /mnt/koji
+koji_builder_workdir: /tmp/koji
+koji_builder_mockdir: /var/lib/mock
+koji_builder_mockuser: kojibuilder
+koji_builder_vendor: Koji
+koji_builder_packager: Koji
+koji_builder_distribution: Koji
+koji_builder_mockhost: koji-linux-gnu
+koji_builder_rpmbuild_timeout: 86400
+koji_builder_hub_server: "http://{{ hostvars[groups['koji_hub'][0]]['inventory_hostname'] }}/kojihub"
+koji_builder_topurl: "http://{{ hostvars[groups['koji_web'][0]]['inventory_hostname'] }}/kojifiles"
+koji_builder_allowed_scms: scm.example.com:/cvs/example git.example.org:/example svn.example.org:/users/*:no
+koji_builder_smtphost: example.com
+koji_builder_from_addr: Koji Build System <buildsys@example.com>
+koji_builder_host_principal_format: compile/%s@EXAMPLE.COM
+koji_builder_keytab: /etc/kojid/kojid.keytab
+koji_builder_krbservice: host
+koji_builder_cert: "/etc/pki/koji/pems/{{ ansible_fqdn }}.pem"
+koji_builder_ca: /etc/pki/koji/koji_ca_cert.crt
+koji_builder_serverca: /etc/pki/koji/koji_ca_cert.crt
+koji_builder_patch_crearepo: false

@@ -1,0 +1,7 @@
+---
+- hosts: localhost
+  connection: local
+  pre_tasks:
+    - yum: name=openssl state=present
+  roles:
+    - { role: selfCA, ca_root_path: "{{ lookup('env', 'HOME') }}/localCA", ssl_cnf_owner: "{{ lookup('env', 'USER') }}", ssl_cnf_group: "{{ lookup('env', 'USER') }}" }

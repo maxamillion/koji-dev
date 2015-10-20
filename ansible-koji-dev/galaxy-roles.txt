@@ -1,0 +1,8 @@
+goozbach.EPEL
+patrik.uytterhoeven.PostgreSQL-For-RHEL6x
+kostyrevaa.koji-db
+kostyrevaa.koji-ca
+kostyrevaa.koji-hub
+kostyrevaa.koji-web
+kostyrevaa.koji-builder
+kostyrevaa.koji-kojira

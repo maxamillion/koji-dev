@@ -1,0 +1,84 @@
+#!/bin/bash
+
+REMOTE_USER=mikem
+COPY_HOSTS=(
+    brew-test.devel.redhat.com
+    hs20-01.brewtest.lab.eng.rdu2.redhat.com
+    s390-007.build.bos.redhat.com
+    tripleo-01.tripleo.lab.eng.bos.redhat.com
+    magrathea.usersys.redhat.com
+)
+SCRIPT_HOSTS=(
+    brew-test.devel.redhat.com
+    hs20-01.brewtest.lab.eng.rdu2.redhat.com
+    hs20-02.brewtest.lab.eng.rdu2.redhat.com
+    hs20-03.brewtest.lab.eng.rdu2.redhat.com
+    hs20-04.brewtest.lab.eng.rdu2.redhat.com
+    hs20-05.brewtest.lab.eng.rdu2.redhat.com
+    ia64-02.brewtest.lab.eng.rdu2.redhat.com
+    js20-09.brewtest.lab.eng.rdu2.redhat.com
+#    ls20-13.brewtest.lab.eng.rdu2.redhat.com
+#    ls20-14.brewtest.lab.eng.rdu2.redhat.com
+    s390-007.build.bos.redhat.com
+    tripleo-01.tripleo.lab.eng.bos.redhat.com
+    magrathea.usersys.redhat.com
+)
+
+EL6_HOSTS=(
+    hs20-01.brewtest.lab.eng.rdu2.redhat.com
+    hs20-05.brewtest.lab.eng.rdu2.redhat.com
+    tripleo-01.tripleo.lab.eng.bos.redhat.com
+    magrathea.usersys.redhat.com
+)
+
+TIMEOUT=300
+while [ $# -gt 0 ]
+do
+    arg=$1
+    shift
+    case $arg in
+        --hub)
+            COPY_HOSTS=(brew-test.devel.redhat.com)
+            SCRIPT_HOSTS=(brew-test.devel.redhat.com)
+            ;;
+        --el6)
+            SCRIPT_HOSTS=("${EL6_HOSTS[@]}")
+            ;;
+        --local)
+            LOCAL=y
+            REMOTE_USER=mike
+            SCRIPT_HOSTS=(localhost)
+            ;;
+    esac
+done
+
+fn=$(ls -1tr koji-*.tar.bz2 rh-koji-plugins-*.tar.bz2 rh-koji-theme-*.tar.bz2 |tail -n 1)
+
+ls -l "$fn"
+sleep 2
+
+echo "Copying to hosts"
+if [ -n "$LOCAL" ]
+then
+    cp -v "$fn" ~
+else
+    host_args=()
+    for h in ${COPY_HOSTS[@]}
+    do
+        host_args=(${host_args[@]} -H "$h")
+    done
+    echo Copy hosts: ${COPY_HOSTS[@]}
+    pscp.pssh "${host_args[@]}" \
+        -l "$REMOTE_USER" -t "$TIMEOUT" -v "$fn" /home/devel/$REMOTE_USER
+    #XXX - pscp requires abs path, but this breaks too easily
+fi
+
+host_args=()
+for h in ${SCRIPT_HOSTS[@]}
+do
+    host_args=(${host_args[@]} -H "$h")
+done
+echo "Running remote install scripts"
+echo "pssh ${host_args[@]} -l root -i -t "$TIMEOUT"  ~$REMOTE_USER/bin/install-test-koji"
+pssh ${host_args[@]} -l root -i -t "$TIMEOUT"  ~$REMOTE_USER/bin/install-test-koji
+

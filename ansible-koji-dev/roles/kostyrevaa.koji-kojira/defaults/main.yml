@@ -1,0 +1,20 @@
+---
+# defaults file for koji-kojira
+koji_kojira_user: kojira   
+koji_kojira_password: kojira   
+koji_kojira_principal: koji/repo@EXAMPLE.COM   
+koji_kojira_keytab: /etc/kojira.keytab   
+koji_kojira_hub_server: "{{ koji_builder_hub_server }}"
+koji_kojira_topdir: /mnt/koji   
+koji_kojira_logfile: /var/log/kojira.log   
+koji_kojira_with_src: no   
+koji_kojira_principal: kojira@EXAMPLE.COM   
+koji_kojira_keytab: /etc/kojira/kojira.keytab   
+koji_kojira_krbservice: host   
+koji_kojira_cert: "/etc/pki/koji/pems/kojira.pem"
+koji_kojira_ca: /etc/pki/koji/koji_ca_cert.crt
+koji_kojira_serverca: /etc/pki/koji/koji_ca_cert.crt
+
+# by default do not execute shell command that grants kojira repo permission
+koji_kojira_grant_repo: False
+koji_kojira_issue_cert: False

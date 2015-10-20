@@ -1,0 +1,5 @@
+---
+# handlers file for koji-builder
+- name: restart kojid
+  service: name=kojid state=restarted
+

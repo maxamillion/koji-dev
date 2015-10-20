@@ -1,0 +1,6 @@
+---
+- name: Main | Configure CA
+  include: configure_ca.yml
+  tags:
+    - koji-ca
+    - koji-ca-only

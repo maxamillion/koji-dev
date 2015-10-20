@@ -1,0 +1,39 @@
+---
+# tasks file for koji-web
+
+- name: Install | Install required Packages
+  yum: name={{item}} state=installed
+  with_items:
+    - koji-web
+    - mod_ssl
+  tags:
+    - koji-web
+
+- name: Configure /etc/kojiweb/web.conf
+  template: src=web.conf.j2 dest=/etc/kojiweb/web.conf owner=root group=root mode=0644
+  notify: httpd graceful
+  tags:
+    - koji-web-conf
+    - koji-web
+
+- name: Configure /etc/httpd/conf.d/kojiweb.conf
+  template: src=kojiweb.conf.j2 dest=/etc/httpd/conf.d/kojiweb.conf owner=root group=root mode=0644
+  notify: httpd graceful
+  tags:
+    - koji-web-apache-conf
+    - koji-web
+
+- name: issue cert for kojiweb
+  shell: "{{ ca_root_path }}/certgen.sh {{ item }}"
+  args:
+    creates: "{{ ca_root_path }}/certs/{{ item }}.crt"
+    chdir: "{{ ca_root_path }}"
+  with_items:
+    - "{{ ansible_fqdn }}"
+  when: koji_web_issue_cert
+
+- name: "Ensure httpd is running"
+  service: name=httpd state=started enabled=yes
+  tags:
+    - koji-web
+

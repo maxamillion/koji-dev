@@ -1,0 +1,6 @@
+---
+- hosts: localhost
+  pre_tasks:
+    - yum: name=openssl state=present
+  roles:
+    - { role: koji-ca }

@@ -1,0 +1,26 @@
+---
+# tasks file for koji-builder
+- name: Main | Install required packages
+  yum: name={{item}} state=installed
+  with_items:
+    - koji-builder
+  tags:
+    - builder
+
+- name: Configure /etc/kojid/kojid.conf
+  template: src=kojid.conf.j2 dest=/etc/kojid/kojid.conf owner=root group=root mode=0644
+  notify:
+    - restart kojid  
+  tags:
+    - builder
+
+- name: Patch createrepo
+  template: src=createrepo.patch.j2 dest=/usr/lib/python2.7/site-packages/createrepo/__init__.py owner=root group=root mode=0644
+  when: ansible_distribution_major_version == '7' and koji_builder_patch_crearepo == true
+  tags:
+    - builder
+
+- name: "Ensure kojid is running"
+  service: name=kojid state=started enabled=yes
+  tags:
+    - builder

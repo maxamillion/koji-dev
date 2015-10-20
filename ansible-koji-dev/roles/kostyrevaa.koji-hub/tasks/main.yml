@@ -1,0 +1,28 @@
+---
+# tasks file for koji-hub
+
+- include: "install.yml"
+
+- include: "configure.yml"
+
+- include: "kojiadmin.yml"
+  when: koji_hub_create_kojiadmin
+
+- name: "add builders"
+  include: "add_builders.yml"
+  when: koji_hub_add_builders
+
+- name: install libsemanage-python
+  yum: name={{ item }} state=present
+  when: ansible_selinux == true
+  with_items:
+    - libselinux-python
+    - libsemanage-python
+  tags:
+    - hub
+
+- name: allow httpd connect to db
+  seboolean: name=httpd_can_network_connect_db state=yes persistent=yes
+  when: ansible_selinux == true
+  tags:
+    - hub

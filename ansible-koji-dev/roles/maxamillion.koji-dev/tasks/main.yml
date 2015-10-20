@@ -1,0 +1,13 @@
+---
+# tasks file for maxamillion.koji-dev
+#
+
+- name: Upload local koji-dev repo configuration
+  template:
+    src: koji-dev.repo.j2
+    dest: /etc/yum.repos.d/koji-dev.repo
+
+- name: Ensure local repo dir exists
+  file:
+    path: "{{ local_repo_dir }}"
+    state: directory

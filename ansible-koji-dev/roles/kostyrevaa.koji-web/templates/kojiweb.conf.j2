@@ -1,0 +1,40 @@
+#We use wsgi by default
+Alias /koji "/usr/share/koji-web/scripts/wsgi_publisher.py"
+#(configuration goes in /etc/kojiweb/web.conf)
+
+<Directory "/usr/share/koji-web/scripts/">
+    Options ExecCGI
+    SetHandler wsgi-script
+{% if ansible_distribution_major_version == '7' %}
+    Require all granted
+{% endif %}
+{% if ansible_distribution_major_version == '6' %}
+    #If you have httpd <= 2.2, you'll want the following two lines instead
+    #of the one above:
+    Order allow,deny
+    Allow from all
+{% endif %}
+</Directory>
+
+# uncomment this to enable authentication via SSL client certificates
+<Location /koji/login>
+    SSLVerifyClient require
+    SSLVerifyDepth  10
+    SSLOptions +StdEnvVars
+</Location>
+
+Alias /koji-static/ "/usr/share/koji-web/static/"
+
+<Directory "/usr/share/koji-web/static/">
+    Options None
+    AllowOverride None
+{% if ansible_distribution_major_version == '7' %}
+    Require all granted
+{% endif %}
+{% if ansible_distribution_major_version == '6' %}
+    #If you have httpd <= 2.2, you'll want the following two lines instead
+    #of the one above:
+    Order allow,deny
+    Allow from all
+{% endif %}
+</Directory>

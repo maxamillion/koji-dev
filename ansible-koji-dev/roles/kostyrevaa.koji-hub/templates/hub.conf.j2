@@ -1,0 +1,17 @@
+[hub]
+
+DBName = {{ koji_hub_DBName }}
+DBUser = {{ koji_hub_DBUser }}
+DBHost = {{ koji_hub_DBHost }}
+DBPass = {{ koji_hub_DBPass }}
+KojiDir = {{ koji_hub_KojiDir }}
+LoginCreatesUser = {{ koji_hub_LoginCreatesUser }}
+KojiWebURL = {{ koji_hub_KojiWebURL }}
+NotifyOnSuccess = {{ koji_hub_NotifyOnSuccess }}
+ProxyDNs = {{ koji_hub_ProxyDNs }}
+KojiDebug = {{ koji_hub_KojiDebug }}
+KojiTraceback = {{ koji_hub_KojiTraceback }}
+{% if koji_hub_policy_build_from_srpm is defined %}
+[policy]
+build_from_srpm = all :: allow
+{% endif %}

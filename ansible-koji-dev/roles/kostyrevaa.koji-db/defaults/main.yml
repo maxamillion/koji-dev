@@ -1,0 +1,4 @@
+---
+# defaults file for koji-db
+koji_dbname: koji
+koji_db_user: koji

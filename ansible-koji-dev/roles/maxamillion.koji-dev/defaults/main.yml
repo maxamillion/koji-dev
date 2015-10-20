@@ -1,0 +1,3 @@
+---
+# defaults file for maxamillion.koji-dev
+local_repo_dir: /var/tmp/koji-dev/

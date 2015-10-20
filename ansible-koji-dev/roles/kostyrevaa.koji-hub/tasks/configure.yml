@@ -1,0 +1,62 @@
+---
+
+- name: Configure hub.conf
+  template: src=hub.conf.j2 dest=/etc/koji-hub/hub.conf owner=root group=root mode=0644
+  tags:
+    - hub
+    - koji-hub-conf
+
+- name: Configure /etc/koji.conf
+  template: src=koji.conf.j2 dest=/etc/koji.conf owner=root group=root mode=0644
+  tags:
+    - hub
+    - koji-conf
+
+- name: Configure /etc/httpd/conf.d/kojihub.conf
+  template: src=apache_kojihub.conf.j2 dest=/etc/httpd/conf.d/kojihub.conf owner=root group=root mode=0644
+  notify: httpd graceful
+  tags:
+    - hub
+    - koji-apache-conf
+
+- name: Configure /etc/httpd/conf.d/ssl.conf
+  template: src=ssl.conf.j2 dest=/etc/httpd/conf.d/ssl.conf owner=root group=root mode=0644
+  notify: httpd graceful
+  tags:
+    - hub
+    - hub-ssl
+    - koji-apache-conf
+
+- name: Make kojiDir directory
+  file: path={{ koji_hub_KojiDir }} state=directory mode=0755 owner=root group=root
+  tags:
+    - hub
+    - dirs
+
+- name: Make directory tree for koji in kojiDir
+  file: path={{ koji_hub_KojiDir }}/{{ item }} state=directory mode=0755 owner=apache group=apache
+  with_items:
+    - packages
+    - repos
+    - work
+    - scratch
+  tags:
+    - hub
+    - dirs
+
+- name: issue cert for koji-hub
+  shell: "{{ ca_root_path }}/certgen.sh {{ ansible_fqdn }}"
+  args:
+    creates: "{{ ca_root_path }}/certs/{{ ansible_fqdn }}.crt"
+    chdir: "{{ ca_root_path }}"
+  when: koji_hub_issue_cert
+  tags:
+    - hub
+
+- name: "Ensure httpd is running"
+  service: name=httpd state=started enabled=yes
+  tags:
+    - hub
+    - hub-service
+    - koji-apache-conf
+

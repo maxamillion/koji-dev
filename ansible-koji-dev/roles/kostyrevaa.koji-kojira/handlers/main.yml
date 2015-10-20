@@ -1,0 +1,4 @@
+---
+# handlers file for koji-kojira
+- name: restart kojira
+  service: name=kojira state=restarted

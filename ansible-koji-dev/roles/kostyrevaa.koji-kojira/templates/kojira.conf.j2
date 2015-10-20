@@ -1,0 +1,38 @@
+[kojira]
+
+; For user/pass authentication
+; user = {{ koji_kojira_user }}
+; password = {{ koji_kojira_password }}
+
+; The URL for the koji hub server
+server = {{ koji_kojira_hub_server }}
+
+; The directory containing the repos/ directory
+topdir = {{ koji_kojira_topdir }}
+
+; Logfile
+logfile = {{ koji_kojira_logfile }}
+
+; Include srpms in repos? (not needed for normal operation)
+with_src = {{ koji_kojira_with_src }}
+
+;configuration for Kerberos authentication
+
+; For Kerberos authentication
+; the principal to connect with
+; principal = {{ koji_kojira_principal }}
+; The location of the keytab for the principal above
+; keytab = {{ koji_kojira_keytab }}
+; the service name of the principal being used by the hub
+; krbservice = {{ koji_kojira_krbservice }}
+
+;configuration for SSL authentication
+
+;client certificate
+cert = {{ koji_kojira_cert }}
+
+;certificate of the CA that issued the client certificate
+ca = {{ koji_kojira_ca }}
+
+;certificate of the CA that issued the HTTP server certificate
+serverca = {{ koji_kojira_serverca }}

@@ -1,0 +1,112 @@
+#!/bin/bash
+
+exec 2>&1
+
+#globals
+SOURCES=()
+if test -n "$1"; then
+    TMPDIR=$1
+    FROMROOT=yes
+    mkdir -m 0700 "$TMPDIR"
+else
+    TMPDIR=$(mktemp -d /tmp/kojitest.XXXXXX)
+fi
+SUDO=sudo
+
+echo "TMPDIR=$TMPDIR"
+
+
+pick_source () {
+    for name in koji rh-koji-plugins brewkoji rh-koji-theme
+    do
+        fn=$(ls -1t ~/${name}-*.tar.* |head -n 1)
+        test -z "$fn" && continue
+        fn2=$(find "$fn" -mmin -600)
+        if [ -z "$fn2" ]
+        then
+            echo "Ignoring old source: $fn"
+            continue
+        fi
+        echo "Using source: $fn"
+        SOURCES=("${SOURCES[@]}" "$fn")
+    done
+    ls -ld "${SOURCES[@]}"
+}
+
+build () {
+    touch "$TMPDIR/build.log"
+    for fn in "${SOURCES[@]}"
+    do
+        rpmbuild \
+            --define "_sourcedir $HOME" \
+            --define "_builddir $TMPDIR" \
+            --define "_srcrpmdir $TMPDIR" \
+            --define "_specdir $TMPDIR" \
+            --define "_rpmdir $TMPDIR" \
+            -ta --define 'testbuild 1' "$fn" \
+        >> "$TMPDIR/build.log" 2>&1
+        tail "$TMPDIR/build.log"
+    done
+}
+
+get_rpms () {
+    local names="koji brewkoji"
+    test -e /usr/sbin/kojid && names="$names koji-builder rh-koji-plugins-builder"
+    test -e /usr/share/koji-hub/kojihub.py && names="$names koji-hub rh-koji-plugins rh-koji-theme"
+    test -e /usr/share/koji-web/lib/kojiweb/__init__.py && names="$names koji-web"
+    test -e /usr/sbin/kojira && names="$names koji-utils"
+    RPMS=$(
+        for p in $names
+        do
+            ls -1t "$TMPDIR/noarch/$p"-[0-9]*.rpm 2>/dev/null |head -n 1
+        done)
+    if test -n "$RPMS"
+    then
+        ls $RPMS
+    fi
+}
+
+restart () {
+    if test -e /etc/init.d/httpd; then
+        $SUDO /etc/init.d/httpd condrestart || :
+    elif systemctl list-units -t service |grep -q httpd; then
+        echo "restarting httpd via systemd"
+        $SUDO systemctl try-restart httpd.service
+    fi
+    #theoretically %post handles the next two
+    #test -e /etc/init.d/kojid && $SUDO /etc/init.d/kojid condrestart || :
+    #test -e /etc/init.d/kojira && $SUDO /etc/init.d/kojira condrestart || :
+}
+
+
+if [ $(whoami) == root ]; then
+    rmdir "$TMPDIR"
+    if id mikem
+    then
+        USER=mikem
+    elif id mike
+    then
+        USER=mike
+    else
+        echo "No user"
+        exit 1
+    fi
+    su - $USER "$0" "$TMPDIR" || exit $?
+    SUDO=""
+else
+    set -e
+    pick_source
+    build
+    get_rpms
+    echo "$RPMS" >$TMPDIR/rpms
+    if test -z "$RPMS"
+    then
+        echo "No rpms found. Exiting."
+        exit 1
+    fi
+fi
+if [ -z "$FROMROOT" ]; then
+    RPMS=$(< $TMPDIR/rpms)
+    $SUDO rpm -Uvh --oldpackage $RPMS
+    restart
+fi

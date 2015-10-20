@@ -1,0 +1,7 @@
+koji_hub_add_builders: true
+
+koji_hub_kojiadmins:
+  - { name: 'kojiadmin' }
+  - { name: 'devadmin', email: 'devadmin@example.org' }
+
+koji_hub_issue_cert: true

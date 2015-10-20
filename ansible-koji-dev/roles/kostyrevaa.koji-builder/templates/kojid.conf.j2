@@ -1,0 +1,92 @@
+[kojid]
+
+;same as you will use with koji add-host
+user = {{ koji_builder_user }}
+
+; The number of seconds to sleep between tasks
+sleeptime = {{ koji_builder_sleeptime }}
+
+; The maximum number of jobs that kojid will handle at a time
+maxjobs = {{ koji_builder_maxjobs }}
+
+; The minimum amount of free space (in MBs) required for each build root
+minspace = {{ koji_builder_minspace }}
+
+; The directory root where work data can be found from the koji hub
+topdir = {{ koji_builder_topdir }}
+
+; The directory root for temporary storage
+workdir = {{ koji_builder_workdir }}
+
+; The directory root for mock
+mockdir = {{ koji_builder_mockdir }}
+
+; The user to run as when doing builds
+mockuser = {{ koji_builder_mockuser }}
+
+; The vendor to use in rpm headers
+vendor = {{ koji_builder_vendor }}
+
+; The packager to use in rpm headers
+packager = {{ koji_builder_packager }}
+
+; The distribution to use in rpm headers
+distribution = {{ koji_builder_distribution }}
+
+; The _host string to use in mock
+mockhost = {{ koji_builder_mockhost }}
+
+; Timeout for build duration (24 hours)
+rpmbuild_timeout = {{ koji_builder_rpmbuild_timeout }}
+
+; The URL for the xmlrpc server
+server = {{ koji_builder_hub_server }}
+
+; The URL for the file access
+topurl = {{ koji_builder_topurl }}
+
+; A space-separated list of tuples from which kojid is allowed to checkout.
+; The format of those tuples is:
+;
+;     host:repository[:use_common[:source_cmd]]
+;
+; Incorrectly-formatted tuples will be ignored.
+;
+; If use_common is not present, kojid will attempt to checkout a common/
+; directory from the repository.  If use_common is set to no, off, false, or 0,
+; it will not attempt to checkout a common/ directory.
+;
+; source_cmd is a shell command (args separated with commas instead of spaces)
+; to run before building the srpm. It is generally used to retrieve source
+; files from a remote location.  If no source_cmd is specified, "make sources"
+; is run by default.
+allowed_scms = {{ koji_builder_allowed_scms }}
+
+; The mail host to use for sending email notifications
+smtphost = {{ koji_builder_smtphost }}
+
+; The From address used when sending email notifications
+from_addr = {{ koji_builder_from_addr }}
+
+;configuration for Kerberos authentication
+
+;the format of the principal used by the build hosts
+;%s will be replaced by the FQDN of the host
+;host_principal_format = {{ koji_builder_host_principal_format }}
+
+;location of the keytab
+;keytab = {{ koji_builder_keytab }}
+
+;the service name of the principal being used by the hub
+;krbservice = {{ koji_builder_krbservice }}
+
+;configuration for SSL authentication
+
+;client certificate
+cert = {{ koji_builder_cert }}
+
+;certificate of the CA that issued the client certificate
+ca = {{ koji_builder_ca }}
+
+;certificate of the CA that issued the HTTP server certificate
+serverca = {{ koji_builder_serverca }}

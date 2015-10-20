@@ -1,0 +1,32 @@
+---
+
+- hosts: all
+  roles:
+    - maxamillion.koji-dev
+
+- hosts: all
+  roles:
+    - goozbach.EPEL
+
+- hosts: koji_db
+  roles:
+    - patrik.uytterhoeven.PostgreSQL-For-RHEL6x
+    - kostyrevaa.koji-db
+
+- hosts: koji_ca
+  roles:
+    - kostyrevaa.koji-ca
+
+- hosts: koji_hub
+  roles:
+    - kostyrevaa.koji-hub
+
+- hosts: koji_web
+  roles:
+    - kostyrevaa.koji-web
+
+- hosts: koji_builder
+  roles:
+    - kostyrevaa.koji-builder
+    - kostyrevaa.koji-kojira
+
